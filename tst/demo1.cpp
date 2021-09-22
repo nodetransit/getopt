@@ -4,13 +4,13 @@
 #include <getopt.hpp>
 
 int
-main(int argc, const char **argv)
+main(int argc,
+     const char **argv)
 {
     auto show_help = [&]() {
         std::cout << argv[0]
                   << " [-h|--help|-?] [-f=path|--file=path] [-v|--version] [-d=number|--depth=number|--max-depth=number]"
                   << std::endl;
-        exit(0);
     };
 
     // Simple functional api. No initialization required.
@@ -26,16 +26,23 @@ main(int argc, const char **argv)
     }
 
     if (version) {
-        std::cout << argv[0] << " demo v1.0.0. Compiled on " << __DATE__ << std::endl;
+        std::cout << argv[0]
+                  << " demo v1.0.0. Compiled on "
+                  << __DATE__
+                  << std::endl;
         return EXIT_SUCCESS;
     }
 
     if (depth) {
-        std::cout << "provided depth: " << depth << std::endl;
+        std::cout << "provided depth: "
+                  << depth
+                  << std::endl;
     }
 
     if (!file.empty()) {
-        std::cout << "provided file: " << file << std::endl;
+        std::cout << "provided file: "
+                  << file
+                  << std::endl;
     }
 
     return EXIT_SUCCESS;
