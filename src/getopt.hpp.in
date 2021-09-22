@@ -17,6 +17,7 @@
 #
 #elif !defined GETOPT_LIB_EXPORT /* compile as static */
 #
+
 #   ifdef _MSC_VER
 #       define __GetOptPort__  __declspec(dllimport)
 #   elif __GNUC__
@@ -26,6 +27,7 @@
 #       pragma warning Unknown dynamic link import semantic.
 #   endif
 #
+
 #endif /* GETOPT_LIB_EXPORT */
 
 #include <map>
@@ -49,104 +51,131 @@
 
 #define GETOPT_VERSION "@PROJECT_VERSION@"
 
-namespace getopt_utils
+namespace getopt_utils {
+// string conversion
+
+template<typename T>
+inline T
+as(const std::string &self)
 {
-    // string conversion
+    T t;
+    return (std::istringstream(self) >> t) ? t :
+           (T)(self.size() && (self != "0") && (self != "false"));
+}
 
-    template< typename T >
-    inline T as( const std::string &self ) {
-        T t;
-        return (std::istringstream(self) >> t) ? t :
-               (T)(self.size() && (self != "0") && (self != "false"));
-    }
+template<>
+inline char
+as(const std::string &self)
+{
+    return self.size() == 1 ?
+           (char)(self[0]) :
+           (char)(as<int>(self));
+}
 
-    template<>
-    inline char as( const std::string &self ) {
-        return self.size() == 1 ? (char)(self[0]) : (char)(as<int>(self));
-    }
-    template<>
-    inline signed char as( const std::string &self ) {
-        return self.size() == 1 ? (signed char)(self[0]) : (signed char)(as<int>(self));
-    }
-    template<>
-    inline unsigned char as( const std::string &self ) {
-        return self.size() == 1 ? (unsigned char)(self[0]) : (unsigned char)(as<int>(self));
-    }
+template<>
+inline signed char
+as(const std::string &self)
+{
+    return self.size() == 1 ?
+           (signed char)(self[0]) :
+           (signed char)(as<int>(self));
+}
 
-    template<>
-    inline const char *as( const std::string &self ) {
-        return self.c_str();
-    }
-    template<>
-    inline std::string as( const std::string &self ) {
-        return self;
-    }
+template<>
+inline unsigned char
+as(const std::string &self)
+{
+    return self.size() == 1 ?
+           (unsigned char)(self[0]) :
+           (unsigned char)(as<int>(self));
+}
 
-    // token split
+template<>
+inline const char *
+as(const std::string &self)
+{
+    return self.c_str();
+}
 
-    inline size_t split( std::vector<std::string> &tokens, const std::string &self, const std::string &delimiters ) {
-        std::string str;
-        tokens.clear();
-        for( auto &ch : self ) {
-            if( delimiters.find_first_of( ch ) != std::string::npos ) {
-                if( str.size() ) tokens.push_back( str ), str = "";
-                tokens.push_back( std::string() + ch );
-            } else str += ch;
+template<>
+inline std::string
+as(const std::string &self)
+{
+    return self;
+}
+
+// token split
+
+inline size_t
+split(std::vector<std::string> &tokens,
+      const std::string &self,
+      const std::string &delimiters)
+{
+    std::string str;
+    tokens.clear();
+    for (auto &ch : self) {
+        if (delimiters.find_first_of(ch) != std::string::npos) {
+            if (str.size()) tokens.push_back(str), str = "";
+            tokens.push_back(std::string() + ch);
+        } else str += ch;
+    }
+    return str.empty() ?
+           tokens.size() :
+           (tokens.push_back(str), tokens.size());
+}
+
+// portable cmdline
+
+inline std::vector<std::string>
+cmdline()
+{
+    std::vector<std::string> args;
+    std::string              arg;
+#ifdef _WIN32
+    int argv;
+    auto *list = ::CommandLineToArgvW( GetCommandLineW(), &argv );
+    if( list ) {
+        for( int i = 0; i < argv; ++i ) {
+            int length = ::WideCharToMultiByte (CP_UTF8, WC_COMPOSITECHECK, list[i], -1, NULL, 0,  NULL, NULL);
+            std::string ws(length + 1, 0);
+            WideCharToMultiByte (CP_UTF8, WC_COMPOSITECHECK, list[i], -1, &ws[0], length+1,  NULL, NULL);
+            args.push_back( std::string( ws.begin(), ws.end() ) );
         }
-        return str.empty() ? tokens.size() : ( tokens.push_back( str ), tokens.size() );
+        ::LocalFree(list);
     }
+#else
+    pid_t pid = getpid();
 
-    // portable cmdline
-
-    inline std::vector<std::string> cmdline() {
-        std::vector<std::string> args;
-        std::string arg;
-    #       ifdef _WIN32
-            int argv;
-            auto *list = ::CommandLineToArgvW( GetCommandLineW(), &argv );
-            if( list ) {
-                for( int i = 0; i < argv; ++i ) {
-                    int length = ::WideCharToMultiByte (CP_UTF8, WC_COMPOSITECHECK, list[i], -1, NULL, 0,  NULL, NULL);
-                    std::string ws(length + 1, 0);
-                    WideCharToMultiByte (CP_UTF8, WC_COMPOSITECHECK, list[i], -1, &ws[0], length+1,  NULL, NULL);
-                    args.push_back( std::string( ws.begin(), ws.end() ) );
-                }
-                LocalFree(list);
-            }
-    #       else
-            pid_t pid = getpid();
-
-            char fname[32] = {};
-            sprintf(fname, "/proc/%d/cmdline", pid);
-            std::ifstream ifs(fname);
-            if( ifs.good() ) {
-                std::stringstream ss;
-                ifs >> ss.rdbuf();
-                arg = ss.str();
-            }
-            for( auto end = arg.size(), i = end - end; i < end; ++i ) {
-                auto st = i;
-                while (i < arg.size() && arg[i] != '\0') ++i;
-                args.push_back( arg.substr(st, i - st) );
-            }
-    #       endif
-        return args;
+    char fname[32]    = {};
+    sprintf(fname, "/proc/%d/cmdline", pid);
+    std::ifstream ifs(fname);
+    if (ifs.good()) {
+        std::stringstream ss;
+        ifs >> ss.rdbuf();
+        arg = ss.str();
     }
+    for (auto     end = arg.size(), i = end - end; i < end; ++i) {
+        auto st = i;
+        while (i < arg.size() && arg[i] != '\0') ++i;
+        args.push_back(arg.substr(st, i - st));
+    }
+#endif
+    return args;
+}
 }
 
 // main map class; explicit initialization
 
-struct __GetOptPort__ getopt : public std::map< std::string, std::string >
+struct __GetOptPort__ getopt :
+      public std::map<std::string, std::string>
 {
-    using super = std::map< std::string, std::string >;
+    getopt(int argc, const char **argv);
 
-    getopt( int argc, const char **argv );
-
-    getopt( const std::vector<std::string> &args );
+    getopt(const std::vector<std::string> &args);
 
     size_t size() const;
 
-    bool has( const std::string &op ) const;
+    bool has(const std::string &op) const;
 
     std::string str() const;
 
@@ -155,27 +184,43 @@ struct __GetOptPort__ getopt : public std::map< std::string, std::string >
 
 // variadic syntax sugars {
 
-template< typename T >
-inline T getarg( const T &defaults, const char *argv ) {
-    static struct getopt map( getopt_utils::cmdline() );
-    return map.has( argv ) ? getopt_utils::as<T>(map[ argv ]) : defaults;
+template<typename T>
+inline T
+getarg(const T &defaults, const char *argv)
+{
+    static struct getopt map(getopt_utils::cmdline());
+    return map.has(argv) ?
+           getopt_utils::as<T>(map[argv]) :
+           defaults;
 }
 
-template< typename T, typename... Args >
-inline T getarg( const T &defaults, const char *arg0, Args... argv ) {
-    T t = getarg<T>( defaults, arg0 );
-    return t == defaults ? getarg<T>( defaults, argv... ) : t;
+template<typename T, typename... Args>
+inline T
+getarg(const T &defaults, const char *arg0, Args... argv)
+{
+    T t = getarg<T>(defaults, arg0);
+    return t == defaults ?
+           getarg<T>(defaults, argv...) :
+           t;
 }
 
-inline const char * getarg( const char *defaults, const char *argv ) {
-    static struct getopt map( getopt_utils::cmdline() );
-    return map.has( argv ) ? getopt_utils::as<const char *>(map[ argv ]) : defaults;
+inline const char *
+getarg(const char *defaults, const char *argv)
+{
+    static struct getopt map(getopt_utils::cmdline());
+    return map.has(argv) ?
+           getopt_utils::as<const char *>(map[argv]) :
+           defaults;
 }
 
-template< typename... Args >
-inline const char * getarg( const char *defaults, const char *arg0, Args... argv ) {
-    const char *t = getarg( defaults, arg0 );
-    return t == defaults ? getarg( defaults, argv... ) : t;
+template<typename... Args>
+inline const char *
+getarg(const char *defaults, const char *arg0, Args... argv)
+{
+    const char *t = getarg(defaults, arg0);
+    return t == defaults ?
+           getarg(defaults, argv...) :
+           t;
 }
 
 // }
