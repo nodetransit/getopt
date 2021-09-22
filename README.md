@@ -57,9 +57,9 @@ int main() {
    but also, `map["--user"]="me"`, `map["--pass"]="123"` and also, `map["-h"]=true`
 
    Additional API:
-   - .cmdline() for a print app invocation string
-   - .str() for pretty map printing
-   - .size() number of arguments (equivalent to argc), rather than `std::map.size()`
+   - `cmdline()` for a print app invocation string
+   - `str()` for pretty map printing
+   - `size()` number of arguments (equivalent to argc), rather than `std::map.size()`
 
 ```c++
 int main( int argc, const char **argv ) {
