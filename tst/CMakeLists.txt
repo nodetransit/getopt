@@ -93,4 +93,5 @@ endmacro()
 
 #---------------------------------------------------------------------
 
-add_example("demo")
+add_example("demo1")
+add_example("demo2")
