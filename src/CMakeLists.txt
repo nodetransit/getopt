@@ -209,8 +209,10 @@ elseif (${GETOPT_LIB_TYPE} STREQUAL "SHARED")
 
         if (DLLTOOL)
             set_target_properties (${BINARY_NAME} PROPERTIES OUTPUT_NAME "${BINARY_NAME}"
+                                                  RUNTIME_OUTPUT_NAME "${BINARY_NAME}"
+                                                  LIBRARY_OUTPUT_NAME "${BINARY_NAME}"
                                                   ARCHIVE_OUTPUT_NAME "${BINARY_NAME}"
-                                                  LINK_FLAGS "${CMAKE_SHARED_LINKER_FLAGS_INIT} -Wl,--output-def=lib${BINARY_NAME}.def")
+                                                  LINK_FLAGS "${CMAKE_SHARED_LINKER_FLAGS_INIT} -Wl,--output-def=${BINARY_NAME}.def")
 
             add_custom_command(TARGET ${BINARY_NAME} POST_BUILD
                                #WORKING_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"
@@ -224,16 +226,11 @@ elseif (${GETOPT_LIB_TYPE} STREQUAL "SHARED")
         endif ()
     else ()
         set_target_properties (${BINARY_NAME} PROPERTIES OUTPUT_NAME "${BINARY_NAME}"
+                                                         RUNTIME_OUTPUT_NAME "${BINARY_NAME}"
+                                                         LIBRARY_OUTPUT_NAME "${BINARY_NAME}"
                                                          ARCHIVE_OUTPUT_NAME "${BINARY_NAME}")
     endif ()
 
-    #if (LINUX)
-    #    set_target_properties (${BINARY_NAME} PROPERTIES OUTPUT_NAME "${BINARY_NAME}"
-    #                           ARCHIVE_OUTPUT_NAME "${BINARY_NAME}"
-    #                           LINK_FLAGS ${CMAKE_SHARED_LINKER_FLAGS_INIT}
-    #                                      "-Wl,-rpath=./")
-    #
-    #endif ()
     list (APPEND COMMON_COMPILE_OPTIONS -DGETOPT_LIB_EXPORT=1
           )
 
