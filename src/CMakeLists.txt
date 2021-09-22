@@ -73,10 +73,14 @@ if (LOSE)
     if (NOT HAVE_IO)
         message (FATAL_ERROR "cannot find io.h")
     endif ()
+    check_include_file_cxx ("stringapiset.h" HAVE_STRINGAPISET)
+    #if (NOT HAVE_STRINGAPISET)
+    #    message (FATAL_ERROR "cannot find stringapiset.h")
+    #endif ()
     check_include_file_cxx ("shellapi.h" HAVE_SHELLAPI)
-    if (NOT HAVE_SHELLAPI)
-        message (FATAL_ERROR "cannot find shellapi.h")
-    endif ()
+    #if (NOT HAVE_SHELLAPI)
+    #    message (FATAL_ERROR "cannot find shellapi.h")
+    #endif ()
     check_include_file_cxx ("winsock2.h" HAVE_WINSOCK2)
     if (NOT HAVE_WINSOCK2)
         message (FATAL_ERROR "cannot find winsock2.h")
@@ -124,10 +128,9 @@ set (BINARY_NAME "getopt")
 add_library (${BINARY_NAME} ${GETOPT_LIB_TYPE} ${SOURCE_FILES})
 
 configure_file ("${CMAKE_CURRENT_SOURCE_DIR}/getopt.hpp.in" "${CMAKE_CURRENT_SOURCE_DIR}/getopt.hpp")
-#configure_file ("${CMAKE_CURRENT_SOURCE_DIR}/common.hpp.in"            "${CMAKE_CURRENT_SOURCE_DIR}/common.hpp")
-#if (LOSE)
-#    configure_file ("${CMAKE_CURRENT_SOURCE_DIR}/manifest.rc.in" "${CMAKE_CURRENT_SOURCE_DIR}/manifest.rc")
-#endif ()
+if (LOSE)
+    configure_file ("${CMAKE_CURRENT_SOURCE_DIR}/manifest.rc.in" "${CMAKE_CURRENT_SOURCE_DIR}/manifest.rc")
+endif ()
 
 #---------------------------------------------------------------------
 
@@ -241,6 +244,12 @@ endif ()
 target_compile_options (${BINARY_NAME} PRIVATE ${COMMON_COMPILE_OPTIONS}
                         ${COMMON_DEBUG_COMPILE_OPTTIONS})
 set_property (TARGET ${BINARY_NAME} PROPERTY CXX_STANDARD 11)
+
+set (COMMON_LINK_LIBRARIES "")
+if (LOSE)
+    list (APPEND COMMON_LINK_LIBRARIES "Shell32" "Kernel32")
+endif ()
+target_link_libraries (${BINARY_NAME} ${COMMON_LINK_LIBRARIES})
 
 target_include_directories(${BINARY_NAME}
                            PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"

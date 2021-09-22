@@ -34,10 +34,11 @@
 #include <vector>
 
 #ifdef _WIN32
+#   define WIN32_LEAN_AND_MEAN /* my ass */
 #   include <io.h>
 #   include <winsock2.h>
 #   include <shellapi.h>
-#   pragma comment(lib, "Shell32.lib")
+#   include <stringapiset.h>
 #else
 #   include <fstream>
 #   include <unistd.h>
@@ -95,17 +96,19 @@ namespace getopt_utils
         return str.empty() ? tokens.size() : ( tokens.push_back( str ), tokens.size() );
     };
 
-    // portable cmdline 
+    // portable cmdline
 
     inline std::vector<std::string> cmdline() {
         std::vector<std::string> args;
         std::string arg;
     #       ifdef _WIN32
             int argv;
-            auto *list = CommandLineToArgvW( GetCommandLineW(), &argv );
+            auto *list = ::CommandLineToArgvW( GetCommandLineW(), &argv );
             if( list ) {
                 for( int i = 0; i < argv; ++i ) {
-                    std::wstring ws( list[i] );
+                    int length = ::WideCharToMultiByte (CP_UTF8, WC_COMPOSITECHECK, list[i], -1, NULL, 0,  NULL, NULL);
+                    std::string ws(length + 1, 0);
+                    WideCharToMultiByte (CP_UTF8, WC_COMPOSITECHECK, list[i], -1, &ws[0], length+1,  NULL, NULL);
                     args.push_back( std::string( ws.begin(), ws.end() ) );
                 }
                 LocalFree(list);
@@ -133,74 +136,21 @@ namespace getopt_utils
 
 // main map class; explicit initialization
 
-struct getopt : public std::map< std::string, std::string >
+struct __GetOptPort__ getopt : public std::map< std::string, std::string >
 {
     using super = std::map< std::string, std::string >;
 
-    getopt( int argc, const char **argv ) : super() {
-        // reconstruct vector
-        std::vector<std::string> args( argc, std::string() );
-        for( int i = 0; i < argc; ++i ) {
-            args[ i ] = argv[ i ];
-        }
-        // create key=value and key= args as well
-        for( auto &it : args ) {
-            std::vector<std::string> tokens;
-            auto size = getopt_utils::split( tokens, it, "=" );
+    getopt( int argc, const char **argv );
 
-            if( size == 3 && tokens[1] == "=" )
-                (*this)[ tokens[0] ] = tokens[2];
-            else
-            if( size == 2 && tokens[1] == "=" )
-                (*this)[ tokens[0] ] = true;
-            else
-            if( size == 1 && tokens[0] != argv[0] )
-                (*this)[ tokens[0] ] = true;
-        }
-        // recreate args
-        while( argc-- ) {
-            (*this)[ std::to_string(argc) ] = std::string( argv[argc] );
-        }
-    }
+    getopt( const std::vector<std::string> &args );
 
-    getopt( const std::vector<std::string> &args ) : super() {
-        std::vector<const char *> argv;
-        for( auto &it : args ) {
-            argv.push_back( it.c_str() );
-        }
-        *this = getopt( argv.size(), argv.data() );
-    }
+    size_t size() const;
 
-    size_t size() const {
-        unsigned i = 0;
-        while( has(std::to_string(i)) ) ++i;
-        return i;
-    }
+    bool has( const std::string &op ) const;
 
-    bool has( const std::string &op ) const {
-        return this->find(op) != this->end();
-    }
+    std::string str() const;
 
-    std::string str() const {
-        std::stringstream ss;
-        std::string sep;
-        for( auto &it : *this ) {
-            ss << sep << it.first << "=" << it.second;
-            sep = ',';
-        }
-        return ss.str();
-    }
-
-    std::string cmdline() const {
-        std::stringstream cmd;
-        std::string sep;
-        // concatenate args
-        for( auto end = size(), arg = end - end; arg < end; ++arg ) {
-            cmd << sep << this->find(std::to_string(arg))->second;
-            sep = ' ';
-        }
-        return cmd.str();
-    }
+    std::string cmdline() const;
 };
 
 // variadic syntax sugars {
