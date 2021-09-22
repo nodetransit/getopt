@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.16)
 project (getopt
-         VERSION 1.0.0
+         VERSION 1.1.0
          DESCRIPTION "Simple getopt replacement class (C++11)")
 set(CMAKE_STATIC_LIBRARY_PREFIX "")
 set(CMAKE_SHARED_LIBRARY_PREFIX "")
@@ -112,7 +112,7 @@ endif ()
 #---------------------------------------------------------------------
 
 set (SOURCE_FILES "getopt.cpp"
-                  )
+                  "utils.cpp")
 if (LOSE)
     list (APPEND SOURCE_FILES "manifest.rc")
 endif ()
