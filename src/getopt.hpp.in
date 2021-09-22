@@ -94,7 +94,7 @@ namespace getopt_utils
             } else str += ch;
         }
         return str.empty() ? tokens.size() : ( tokens.push_back( str ), tokens.size() );
-    };
+    }
 
     // portable cmdline
 
