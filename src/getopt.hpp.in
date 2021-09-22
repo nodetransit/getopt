@@ -1,68 +1,52 @@
-// Simple getopt replacement class (C++11). 
-// - rlyeh, zlib/libpng licensed.
+#ifndef GETOPT_HPP_HEADER__
+#define GETOPT_HPP_HEADER__
 
-// Two APIs provided:
-//
-// 1) Simple functional api `getarg(...)`. 
-//    - No initialization required: (argc, argv) pair automatically retrieved.
-//    - First argument is default option value, then all option indentifiers follow.
-//
-// int main() {
-//     bool help = getarg( false, "-h", "--help", "-?" );
-//     int version = getarg( 0, "-v", "--version", "--show-version" );
-//     int depth = getarg( 1, "-d", "--depth", "--max-depth");
-//     std::string file = getarg( "", "-f", "--file" );
-//     [...]
-// }
-//
-// 2) Simple OOP map-based api `getopt class`. Initialization (argc, argv) pair required.
-//
-//    This getopt class is a std::map replacement where key/value are std::string types.
-//    Given invokation './app.out --user=me --pass=123 -h' this class delivers not only:
-//    map[0] = "./app.out", map[1] = "--user=me", map[2]="--pass=123", map[3]='-h'
-//    but also, map["--user"]="me", map["--pass"]="123" and also, map["-h"]=true
-//
-//    Additional API:
-//    - .cmdline() for a print app invokation string
-//    - .str() for pretty map printing
-//    - .size() number of arguments (equivalent to argc), rather than std::map.size()
-//
-// int main( int argc, const char **argv ) {
-//     getopt args( argc, argv );
-//     if( args.has("-h") || args.has("--help") || args.has("-?") || args.size() == 1 ) {
-//         std::cout << args["0"] << " [-?|-h|--help] [-v|--version] [--depth=number]" << std::endl;
-//         return 0;
-//     }
-//     if( args.has("-v") || args.has("--version") ) {
-//         std::cout << args["0"] << " sample v1.0.0. Compiled on " << __DATE__ << std::endl;
-//     }
-//     if( args.has("--depth") ) {
-//         int depth = atoi( args["--depth"].c_str() );
-//         std::cout << "depth set to " << depth << std::endl;
-//     }
-//     [...]
-// }
+#cmakedefine GETOPT_EXPORT_SHARED
+#cmakedefine GETOPT_EXPORT_STATIC
 
-#pragma once
+#ifdef GETOPT_LIB_EXPORT /* inside DLL, export functons */
+#
+#   ifdef _MSC_VER
+#       define __GetOptPort__  __declspec(dllexport)
+#   elif __GNUC__
+#       define __GetOptPort__  __attribute__((visibility("default")))
+#   else
+#       define __GetOptPort__
+#       pragma warning Unknown dynamic link export semantic.
+#   endif
+#
+#elif !defined GETOPT_LIB_EXPORT /* compile as static */
+#
+#   ifdef _MSC_VER
+#       define __GetOptPort__  __declspec(dllimport)
+#   elif __GNUC__
+#       define __GetOptPort__
+#   else
+#       define __GetOptPort__
+#       pragma warning Unknown dynamic link import semantic.
+#   endif
+#
+#endif /* GETOPT_LIB_EXPORT */
+
 #include <map>
 #include <string>
 #include <sstream>
 #include <vector>
 
 #ifdef _WIN32
-#include <io.h>
-#include <winsock2.h>
-#include <shellapi.h>
-#pragma comment(lib, "Shell32.lib")
+#   include <io.h>
+#   include <winsock2.h>
+#   include <shellapi.h>
+#   pragma comment(lib, "Shell32.lib")
 #else
-#include <fstream>
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sstream>
+#   include <fstream>
+#   include <unistd.h>
+#   include <stdio.h>
+#   include <stdlib.h>
+#   include <sstream>
 #endif
 
-#define GETOPT_VERSION "1.0.0" // (2016/04/18) Initial version
+#define GETOPT_VERSION "@PROJECT_VERSION@"
 
 namespace getopt_utils
 {
@@ -245,3 +229,5 @@ inline const char * getarg( const char *defaults, const char *arg0, Args... argv
 }
 
 // }
+
+#endif /* GETOPT_HPP_HEADER__ */
