@@ -1,24 +1,7 @@
-#pragma once
-#include <map>
-#include <string>
-#include <sstream>
-#include <vector>
-
-#ifdef _WIN32
-#include <io.h>
-#include <winsock2.h>
-#include <shellapi.h>
-#pragma comment(lib, "Shell32.lib")
-#else
-#include <fstream>
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sstream>
-#endif
-
 #include <iostream>
-#include <stdlib.h>
+#include <cstdlib>
+
+#include <getopt.hpp>
 
 int main( int argc, const char **argv ) {
 
@@ -29,9 +12,9 @@ int main( int argc, const char **argv ) {
 
     // Simple functional api. No initialization required.
 
-    bool help = getarg( false, "-h", "--help", "-?" );
-    int version = getarg( 0, "-v", "--version", "--show-version" );
-    int depth = getarg( 0, "-d", "--depth", "--max-depth");
+    bool help        = getarg( false, "-h", "--help", "-?" );
+    int version      = getarg( 0, "-v", "--version", "--show-version" );
+    int depth        = getarg( 0, "-d", "--depth", "--max-depth");
     std::string file = getarg( "", "-f", "--file" );
 
     if( help || argc <= 1 ) {
