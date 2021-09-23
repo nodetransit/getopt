@@ -51,7 +51,7 @@ cmdline()
 #else
     pid_t pid = getpid();
 
-    char fname[32] = {};
+    char fname[32] = {0};
     sprintf(fname, "/proc/%d/cmdline", pid);
     std::ifstream ifs(fname);
     if (ifs.good()) {
