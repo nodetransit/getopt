@@ -40,10 +40,11 @@ cmdline()
     auto *list = ::CommandLineToArgvW(::GetCommandLineW(), &argv);
 
     if( list ) {
+        char errConv = '?';
         for(int i = 0; i < argv; ++i) {
-            int length = ::WideCharToMultiByte(CP_UTF8, WC_COMPOSITECHECK, list[i], -1, NULL, 0,  NULL, NULL);
+            int length = ::WideCharToMultiByte(CP_ACP, 0, list[i], -1, NULL, 0,  &errConv, NULL);
             std::string ws(length + 1, 0);
-            WideCharToMultiByte(CP_UTF8, WC_COMPOSITECHECK, list[i], -1, &ws[0], length+1,  NULL, NULL);
+            ::WideCharToMultiByte(CP_ACP, 0, list[i], -1, &ws[0], length + 1,  &errConv, NULL);
             args.push_back(std::string(ws.begin(), ws.end()));
         }
         ::LocalFree(list);

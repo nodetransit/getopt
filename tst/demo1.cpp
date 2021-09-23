@@ -40,9 +40,19 @@ main(int argc,
     }
 
     if (!file.empty()) {
-        std::cout << "provided file: "
-                  << file
-                  << std::endl;
+        std::cout << "provided file: ";
+//#ifdef _WIN32
+//        {
+//            int length = ::MultiByteToWideChar(CP_ACP, 0, file.c_str(), -1, NULL, 0);
+//            std::wstring wfile(length + 1, 0);
+//            ::MultiByteToWideChar(CP_ACP, 0, file.c_str(), -1, &wfile[0], length + 1);
+//
+//            std::wcout << wfile;
+//        }
+//#else
+        std::cout << file;
+//#endif
+        std::cout << std::endl;
     }
 
     return EXIT_SUCCESS;
