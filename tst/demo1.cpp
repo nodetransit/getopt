@@ -41,17 +41,20 @@ main(int argc,
 
     if (!file.empty()) {
         std::cout << "provided file: ";
-//#ifdef _WIN32
-//        {
-//            int length = ::MultiByteToWideChar(CP_ACP, 0, file.c_str(), -1, NULL, 0);
-//            std::wstring wfile(length + 1, 0);
-//            ::MultiByteToWideChar(CP_ACP, 0, file.c_str(), -1, &wfile[0], length + 1);
-//
-//            std::wcout << wfile;
-//        }
-//#else
-        std::cout << file;
-//#endif
+#ifdef _WIN32
+        {
+            size_t length = mbstowcs(nullptr, file.c_str(), 0);
+            //wchar_t* wfile = (wchar_t*)calloc(length + 1, sizeof(wchar_t));
+            wchar_t* wfile = new wchar_t[length + 1];
+            size_t copied = mbstowcs(wfile, file.c_str(), length);
+            wfile[copied] = L'\0';
+            std::wcout << wfile;
+            //free(wfile);
+            delete [] wfile;
+        }
+#else
+        std::cout << file
+#endif
         std::cout << std::endl;
     }
 

@@ -39,13 +39,20 @@ cmdline()
     int argv;
     auto *list = ::CommandLineToArgvW(::GetCommandLineW(), &argv);
 
-    if( list ) {
-        char errConv = '?';
+    if(list) {
         for(int i = 0; i < argv; ++i) {
-            int length = ::WideCharToMultiByte(CP_ACP, 0, list[i], -1, NULL, 0,  &errConv, NULL);
-            std::string ws(length + 1, 0);
-            ::WideCharToMultiByte(CP_ACP, 0, list[i], -1, &ws[0], length + 1,  &errConv, NULL);
-            args.push_back(std::string(ws.begin(), ws.end()));
+            size_t length = wcstombs(NULL, list[i], 0);
+            //char* buff = (char*)calloc(length + 1, sizeof(char));
+            char* buff = new char[length + 1];
+            size_t copied = wcstombs(buff, list[i], length);
+            buff[copied] = '\0';
+            args.push_back(std::string(buff));
+
+            //std::string ws(buff);
+            //args.push_back(std::string(ws.begin(), ws.end()));
+
+            //free(buff);
+            delete [] buff;
         }
         ::LocalFree(list);
     }
