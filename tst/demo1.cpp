@@ -41,17 +41,18 @@ main(int argc,
 
     if (!file.empty()) {
         std::cout << "provided file: ";
-//#ifdef _WIN32
-//        {
-//            int length = ::MultiByteToWideChar(CP_ACP, 0, file.c_str(), -1, NULL, 0);
-//            std::wstring wfile(length + 1, 0);
-//            ::MultiByteToWideChar(CP_ACP, 0, file.c_str(), -1, &wfile[0], length + 1);
-//
-//            std::wcout << wfile;
-//        }
-//#else
+#ifdef _WIN32
+        {
+            int codePage = CP_UTF8;
+            int length = ::MultiByteToWideChar(codePage, 0, file.c_str(), -1, NULL, 0);
+            std::wstring wfile(length + 1, 0);
+            ::MultiByteToWideChar(codePage, 0, file.c_str(), -1, &wfile[0], length + 1);
+
+            std::wcout << wfile;
+        }
+#else
         std::cout << file;
-//#endif
+#endif
         std::cout << std::endl;
     }
 

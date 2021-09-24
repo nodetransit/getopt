@@ -41,10 +41,11 @@ cmdline()
 
     if( list ) {
         char errConv = '?';
+        int codePage = CP_UTF8;
         for(int i = 0; i < argv; ++i) {
-            int length = ::WideCharToMultiByte(CP_ACP, 0, list[i], -1, NULL, 0,  &errConv, NULL);
+            int length = ::WideCharToMultiByte(codePage, 0, list[i], -1, NULL, 0,  &errConv, NULL);
             std::string ws(length + 1, 0);
-            ::WideCharToMultiByte(CP_ACP, 0, list[i], -1, &ws[0], length + 1,  &errConv, NULL);
+            ::WideCharToMultiByte(codePage, 0, list[i], -1, &ws[0], length + 1,  &errConv, NULL);
             args.push_back(std::string(ws.begin(), ws.end()));
         }
         ::LocalFree(list);
