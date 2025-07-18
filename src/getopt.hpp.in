@@ -19,7 +19,7 @@
 #
 
 #   ifdef _MSC_VER
-#       define __GetOptPort__  __declspec(dllimport)
+#       define __GetOptPort__ 
 #   elif __GNUC__
 #       define __GetOptPort__
 #   else

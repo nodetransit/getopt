@@ -38,6 +38,7 @@ else ()
     set (GETOPT_LIB_TYPE STATIC)
     set (GETOPT_EXPORT_STATIC ON)
 endif ()
+message (STATUS "Building getopt as a ${GETOPT_LIB_TYPE} library")
 
 #---------------------------------------------------------------------
 
@@ -114,7 +115,9 @@ endif ()
 set (SOURCE_FILES "getopt.cpp"
                   "utils.cpp")
 if (LOSE)
-    list (APPEND SOURCE_FILES "manifest.rc")
+    list (APPEND SOURCE_FILES "manifest.rc"
+                              "getopt.hpp"
+                              "getopt.hpp.in")
 endif ()
 
 if (VERBOSE)
@@ -196,9 +199,9 @@ endif ()
 
 if (${GETOPT_LIB_TYPE} STREQUAL "STATIC")
     set_property(TARGET ${BINARY_NAME} PROPERTY POSITION_INDEPENDENT_CODE ON)
-    #add_definitions (-DGETOPT_LIB_EXPORT=1
-    #                 )
 elseif (${GETOPT_LIB_TYPE} STREQUAL "SHARED")
+    add_definitions (-DGETOPT_LIB_EXPORT=1
+                     )
     if (LOSE)
         set (CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
@@ -244,7 +247,7 @@ set_property (TARGET ${BINARY_NAME} PROPERTY CXX_STANDARD 11)
 
 set (COMMON_LINK_LIBRARIES "")
 if (LOSE)
-    list (APPEND COMMON_LINK_LIBRARIES "Shell32" "Kernel32")
+    list (APPEND COMMON_LINK_LIBRARIES "Shell32" "Kernel32" "User32")
 endif ()
 target_link_libraries (${BINARY_NAME} ${COMMON_LINK_LIBRARIES})
 
