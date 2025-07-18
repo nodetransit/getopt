@@ -35,7 +35,7 @@ getopt::getopt(const std::vector<std::string> &args) :
     for (auto                 &it : args) {
         argv.push_back(it.c_str());
     }
-    *this = getopt(argv.size(), argv.data());
+    *this = getopt((int)argv.size(), argv.data());
 }
 
 size_t

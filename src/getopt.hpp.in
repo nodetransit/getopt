@@ -51,6 +51,26 @@
 
 #define GETOPT_VERSION "@PROJECT_VERSION@"
 
+#ifdef GETOPT_LIB_EXPORT /* inside DLL, export functons */
+// for your sanity, just link with the library you built
+#   ifdef _MSC_VER
+#       pragma warning(disable: 4251)
+#   endif
+
+/*
+ * #define GET_OPT_EXPORT_STL_VECTOR( dllmacro, vectype ) \
+ *   template class dllmacro std::allocator< vectype >; \
+ *   template class dllmacro std::vector<vectype, std::allocator< vectype > >;
+ * 
+ * #define GET_OPT_EXPORT_STL_MAP( dllmacro, mapkey, mapvalue ) \
+ *   template struct dllmacro std::map< mapkey,mapvalue >;
+ * 
+ * GET_OPT_EXPORT_STL_VECTOR(__GetOptPort__, std::string)
+ * GET_OPT_EXPORT_STL_MAP(__GetOptPort__, std::string, std::string)
+ */
+#endif
+
+
 namespace getopt_utils {
 // string conversion
 
