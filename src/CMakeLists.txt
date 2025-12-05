@@ -127,8 +127,15 @@ if (VERBOSE)
     endforeach()
 endif ()
 
-set (BINARY_NAME "getopt")
+set (BINARY_NAME "libgetopt")
 add_library (${BINARY_NAME} ${GETOPT_LIB_TYPE} ${SOURCE_FILES})
+install (TARGETS ${BINARY_NAME}
+         RUNTIME DESTINATION bin
+         LIBRARY DESTINATION lib
+         ARCHIVE DESTINATION lib/${BINARY_NAME})
+install (FILES "getopt.hpp"
+         DESTINATION include)
+
 
 configure_file ("${CMAKE_CURRENT_SOURCE_DIR}/getopt.hpp.in" "${CMAKE_CURRENT_SOURCE_DIR}/getopt.hpp")
 if (LOSE)
